@@ -4,12 +4,17 @@ To use plink, we could either:
 1. Download PLINK, choose the correct operating system, follow the website instruction to download
 > https://www.cog-genomics.org/plink/1.9/
 After extraction, copy the *plink* file to the folder that has the data. To use the *plink* file, we run to *plink* file as ./plink --yourcommand
-2. Install plink through anaconda
+2. Install plink through anaconda, which needed anaconda to be install first, read more about instsallation of conda in through this [link](https://docs.conda.io/en/latest/miniconda.html).
+
+In this case, we will use the second option.
 ```sh
+# Installing plink, this version is 1.90
+conda install plink
 # Convert the DataS1.bed file to ped file.
 plink --bfile DataS1 --recode --tab --out DataS1
 ```
-This will generate a .ped file, a .map file that has similar information as .bim file but without the allele information,
+This will generate a .ped file, a .map file that has similar information as .bim file but without the allele information.
+
 # Data explanation
 ## .bim files (PLINK extended MAP file)
 Extended variant information file accompanying a .bed binary genotype table.
@@ -68,3 +73,8 @@ The plot show the minor allele freq overtime, and I assume the data set is one y
 What is 1,2,3,4 stand for, I know 1 is A, 3 is C, what about 2 and 4??
 
 
+```sh
+#Cut the ID from the .fam file for filter in the excel file.
+cat DataS1.fam | cut -d " " -f2 >> ID 
+
+```
