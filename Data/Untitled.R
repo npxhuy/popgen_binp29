@@ -10,6 +10,8 @@ maindata <- read_excel("V50.xlsx")
 # Select only the ID and mean date
 filter1_maindata = maindata %>%
   select(c(`Master ID`,`Date mean in BP in years before 1950 CE [OxCal mu for a direct radiocarbon date, and average of range for a contextual date]`))
+colnames(filter1_maindata) <- c("MasterID","DateMean")
+write.table(filter1_maindata,file="ID_and_date.txt",row.names = FALSE,quote=FALSE)
 
 # Load the .fam data (has the ID)
 famdata <- read.delim(file="DataS1.fam", sep =" ", header=FALSE)
@@ -37,7 +39,7 @@ timeseq=c(timeseq1,timeseq2_2,timeseq3)
 # Read the ped file
 pedfile=read.delim("DataS1.ped",header=FALSE)
 
-
+dataname=NULL
 # Generate different data base on different time step
 for (i in 1:(length(timeseq)-1)) { 
   # paste generate a variable name
@@ -45,21 +47,22 @@ for (i in 1:(length(timeseq)-1)) {
   # assign assign the variable name with the data 
   # data was filter base on the timeseq
   temp=filter2_maindata[filter2_maindata$DateMean>=timeseq[i] & filter2_maindata$DateMean < timeseq[i+1], ]
+  assign(gsub(" ","",paste("data_",as.character(i),"_time")),temp)
   maxx=max(temp$DateMean)
   minn=min(temp$DateMean)
-  assign(gsub(" ","",paste("data_",as.character(minn),"_",as.character(maxx))),
+  assign(gsub(" ","",paste("data_",as.character(i))),
     pedfile[pedfile$V2 %in% temp$MasterID,])
-  #write.csv(mydata,file=gsub(" ","",paste("data_",as.character(i))))
+  dataname=append(dataname,gsub(" ","",paste("data_",as.character(i))))
+  
 }
 
+install.packages("vcfR")
+library("vcfR")
+
+bimfile=read.delim("DataS1.bim",header=FALSE)
 
 
-pedfile %>%
-  count(V8)
-
-assign(gsub(" ","",paste("data_",as.character(i))),
-       filter2_maindata[filter2_maindata$DateMean>=timeseq[i] & filter2_maindata$DateMean < timeseq[i+1], ])
-
+listname=list(data_1,data_2)
 
 
 
