@@ -8,5 +8,5 @@ library("readxl")
 maindata <- read_excel("V50.xlsx")
 maindata = maindata %>%
   select(c(`Master ID`,`Date mean in BP in years before 1950 CE [OxCal mu for a direct radiocarbon date, and average of range for a contextual date]`))
-colnames(maindata) <- c("MasterID","DateMean")
+colnames(maindata) <- NULL
 write.table(maindata,file="ID_and_date.txt",row.names = FALSE,quote=FALSE)
