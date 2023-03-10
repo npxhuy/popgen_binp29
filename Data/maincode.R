@@ -154,17 +154,19 @@ ggplot(plot_data_bar_long, aes(x = Year, y = Count, fill = Allele)) +
 plot1 <- ggplot()+
   geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
   scale_fill_manual(values = c("C"="green","T"="blue")) +
-  #ylim(1,-250) +
   scale_x_reverse() +
   scale_y_reverse() +
-  theme_classic() +
-  # geom_line(data=plot_data_line, aes(x = Year, y = MAF))
-
+  theme_classic() + theme(legend.position = "none") 
   
+  #geom_line(data=plot_data_line, aes(x = Year, y = MAF))
+  
+  
+par(mar = c(4.1, 4.1, 0, 2.1))
 plot2 <- ggplot()+
+  geom_point(data=plot_data_line, aes(x = Year, y = MAF))+
   geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
   theme_classic()+
-  scale_x_reverse()
+  scale_x_reverse() + theme(axis.title.x = element_blank(), axis.text.x = element_blank())
 
 plot3 <- ggarrange(plot2,plot1,nrow=2,ncol=1)
 
@@ -173,3 +175,60 @@ library(ggpubr)
 
 install.packages("patchwork")
 library(patchwork)
+
+install.packages("egg")
+library(egg)
+
+install.packages("lubridate")
+library(lubridate)
+
+cowplot::plot_grid(plot2, plot1, align = "v", ncol = 1, rel_heights = c(0.25, 0.5))
+egg::ggarrange(plot2, plot1, heights = c(0.25, 0.4))
+
+plot_grid(plot2, plot1, ncol = 1, align = "v", axis = "tb",
+          # Hide x-axis labels for the top plot
+          axis_x = list(ticks = FALSE)) 
+          
+plot4 <- ggplot()+
+  geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
+  scale_fill_manual(values = c("C"="green","T"="blue")) +
+  scale_x_reverse() +
+  #scale_y_reverse() +
+  scale_y_continuous() +
+  theme_classic() + theme(legend.position = "none") +
+  geom_point(data=plot_data_line_modify, aes(x = Year, y = MAF))+
+  geom_line(data=plot_data_line_modify, aes(x = Year, y = MAF))
+  
+
+plot_data_line_modify$MAF <- -100*plot_data_line_modify$MAF
+
+install.packages("shiny")
+library(shiny)
+
+plot1 <- ggplot()+
+  geom_point(data=plot_data_line, aes(x = Year, y = MAF))+
+  geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
+  theme_classic()+
+  scale_x_reverse(expand = expansion(add = c(1625, 1625))) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank()) +
+  theme(axis.ticks.length.x = unit(0, "cm")) +
+  theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+# Part of the trickiness here is that padding works differently 
+# for points/lines vs. bars, which have width around the data point. 
+# So if we want our points to be aligned with our bars, we need to tweak that.
+# To estimate what this should be, I note that the Year resolution is 2500, the
+# bars will be 90% of that width (2,250), so each side of the bar extends 1,125 
+# beyond the range that the points need. So I add 1,125 to the point padding.
+
+plot2 <- ggplot()+
+  geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
+  scale_fill_manual(values = c("C"="green","T"="blue")) +
+  scale_x_reverse(expand = expansion(add = c(500, 500))) +
+  scale_y_reverse(expand = expansion(mult = c(0.05, 0))) +
+  theme_classic() + theme(legend.position = "none") +
+  theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+
+ggarrange(plot1, plot2, nrow = 2)
