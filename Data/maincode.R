@@ -209,11 +209,11 @@ plot1 <- ggplot()+
   geom_point(data=plot_data_line, aes(x = Year, y = MAF))+
   geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
   theme_classic()+
-  scale_x_reverse(expand = expansion(add = c(1625, 1625))) +
+  scale_x_reverse(expand = expansion(add = c(1000,0))) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-  theme(axis.title.x = element_blank(), axis.text.x = element_blank()) +
-  theme(axis.ticks.length.x = unit(0, "cm")) +
-  theme(plot.margin = unit(c(0,0,0,0), "cm"))
+  theme(axis.title.x = element_blank(), axis.text.x = element_blank()) #+
+  #theme(axis.ticks.length.x = unit(0, "cm")) +
+  #theme(plot.margin = unit(c(0,0,0,0), "cm"))
 
 # Part of the trickiness here is that padding works differently 
 # for points/lines vs. bars, which have width around the data point. 
