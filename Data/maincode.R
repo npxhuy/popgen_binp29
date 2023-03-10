@@ -137,18 +137,39 @@ plot_data_bar <- data.frame(minor_count_vec,major_count_vec,time_vec_temp)
 colnames(plot_data_bar) <- c(minor_lab,major_lab,"Year")
 plot_data_bar_long <- reshape2::melt(plot_data_bar, id.vars= "Year", variable.name = "Allele", value.name = "Count")
 
+
+plot_data_line <- data.frame(maf_vec,time_vec_temp)
+colnames(plot_data_line) <- c("MAF","Year")
+
+ggplot(plot_data_line, aes(x = Year, y = MAF)) +
+  geom_line() +
+  labs(title = "Line Plot", x = "Year", y = "Value")
+
 ggplot(plot_data_bar_long, aes(x = Year, y = Count, fill = Allele)) +
   geom_bar(stat = "identity") + scale_y_reverse() +
   labs(title = "Stacked Bar Plot") +
   geom_line(data=plot_data_line, aes(x = Year, y = MAF))
 
-plot_data_line <- data.frame(maf_vec,time_vec_temp)
-colnames(plot_data_line) <- c("MAF","Year")
+# geom_line(data=plot_data_line, aes(x=Year,y=MAF))
+plot1 <- ggplot()+
+  geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
+  scale_fill_manual(values = c("C"="green","T"="blue")) +
+  #ylim(1,-250) +
+  scale_x_reverse() +
+  scale_y_reverse() +
+  theme_classic() +
+  # geom_line(data=plot_data_line, aes(x = Year, y = MAF))
 
-line_plot <- ggplot(plot_data_line, aes(x = Year, y = MAF)) +
-  geom_line() +
-  labs(title = "Line Plot", x = "Year", y = "Value")
+  
+plot2 <- ggplot()+
+  geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
+  theme_classic()+
+  scale_x_reverse()
 
-ggplot()+
-  geom_line(data=plot_data_line, aes(x = Year, y = MAF)) +
-  geom_bar(data=plot_data_bar_long, aes(x = Year, y = Count, fill = Allele))
+plot3 <- ggarrange(plot2,plot1,nrow=2,ncol=1)
+
+install.packages("ggpubr")
+library(ggpubr)
+
+install.packages("patchwork")
+library(patchwork)

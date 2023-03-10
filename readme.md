@@ -70,7 +70,7 @@ Calculate minor allele freq can we use the plink or have to manually write it??
 
 The plot show the minor allele freq overtime, and I assume the data set is one year only??? I guess
 
-What is 1,2,3,4 stand for ACGT
+ 1,2,3,4 stand for ACGT
 
 
 ```sh
