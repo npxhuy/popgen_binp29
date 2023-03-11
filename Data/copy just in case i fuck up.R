@@ -135,11 +135,11 @@ if (is.null(result_major)){
 
 
 # Plotting
-time_vec_temp <- c(1,4,7,8,30,31)
+time_vec_temp <- c(2500,5000,7500,10000,12500,15000)
 
 # Data for stacked bar plot
 plot_data_bar <- data.frame(minor_count_vec,major_count_vec,time_vec_temp)
-colnames(plot_data_bar) <- c("Minor","Major","Year")
+colnames(plot_data_bar) <- c(minor_lab,major_lab,"Year")
 plot_data_bar_long <- reshape2::melt(plot_data_bar, id.vars= "Year", variable.name = "Allele", value.name = "Count")
 
 
@@ -150,7 +150,7 @@ install.packages("egg")
 library(egg)
 
 
-ggarrange(plot1, plot2, heights = c(0.25, 0.4))
+egg::ggarrange(plot1, plot2, heights = c(0.25, 0.4))
 
 
 
@@ -161,7 +161,7 @@ plot1 <- ggplot()+
   geom_point(data=plot_data_line, aes(x = Year, y = MAF))+
   geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
   theme_classic()+
-  scale_x_reverse(expand = expansion(add = c(0, 0))) +
+  scale_x_reverse(expand = expansion(add = c(1625, 1625))) +
   scale_y_continuous(expand = expansion(mult = c(0,0.01)), limits = c(0,1.1)) +
   theme(axis.title.x = element_blank(), axis.text.x = element_blank()) + #remove the y axis label
   theme(axis.ticks.length.x = unit(0, "cm")) + #set the length of the divider of value in the x axis to 0
@@ -176,8 +176,8 @@ plot1 <- ggplot()+
 
 plot2 <- ggplot()+
   geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
-  scale_fill_manual(values = c(major_lab="green",minor_lab="blue")) +
-  scale_x_reverse(expand = expansion(add = c(0, 0))) + #expand the bar and also reverse the x axis value
+  scale_fill_manual(values = c("C"="green","T"="blue")) +
+  scale_x_reverse(expand = expansion(add = c(500, 500))) + #expand the bar and also reverse the x axis value
   scale_y_reverse(expand = expansion(mult = c(0.05, 0))) + #expand the y axis upward and downward so the x-axis kinda disappear when merge two plot
   theme_classic() + theme(legend.position = "none") + #Remove legend
   theme(plot.margin = unit(c(0,0,0,0), "cm")) #Expand the plot so when merge it seamless
