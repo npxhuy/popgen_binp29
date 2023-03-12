@@ -132,14 +132,15 @@ allele_data <- function(bim, ped, time_vec){
   colnames(final_data_frame) <- c(minor_lab,major_lab,"Year","MAF")
   
   #Return the allele data
-  return(final_data_frame)
+  return(c(final_data_frame,snp_name))
 }
 
 plotting_maf <- function(data){
-  
-  #Extract the minor lab for label later
-  minor_lab=colnames(data[1])
-  major_lab=colnames(data[2])
+  # Extract the minor, major, snp for label later 
+  snp_name = data[5]
+  minor_lab=colnames(as.data.frame(data[1:3][1]))
+  major_lab=colnames(as.data.frame(data[1:3][2]))
+  label = paste(snp_name," - ",minor_lab,"/",major_lab,sep="")
   
   # Make data for bar plot
   plot_data_bar <- as.data.frame(data[1:3])
@@ -154,6 +155,9 @@ plotting_maf <- function(data){
   # Make data for line plot
   plot_data_line <- as.data.frame(data[3:4])
   
+  
+  
+  
   # Find time_vec resolution, to make the plot beautiful
   # Part of the trickiness here is that padding works differently 
   # for points/lines vs. bars, which have width around the data point. 
@@ -166,18 +170,21 @@ plotting_maf <- function(data){
   res <- rep((0.9*step)/2+500,2)
   
   # Plot line+point plot
-  plot1 <- ggplot()+
-    geom_point(data=plot_data_line, aes(x = Year, y = MAF))+
-    geom_line(data=plot_data_line, aes(x = Year, y = MAF))+
-    theme_classic()+
+  plot1 <- ggplot() +
+    geom_point(data=plot_data_line, aes(x = Year, y = MAF)) +
+    geom_line(data=plot_data_line, aes(x = Year, y = MAF)) +
+    theme_classic() +
     scale_x_reverse(expand = expansion(add = res)) +
     scale_y_continuous(expand = expansion(mult = c(0,0.01)), limits = c(0,1.1)) +
+    ggtitle(label) +
+    ylab(paste("MAF (",minor_lab,")",sep="")) +
+    theme(plot.title = element_text(hjust = 0.5,size=12)) +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank()) + #remove the y axis label
     theme(axis.ticks.length.x = unit(0, "cm")) + #set the length of the divider of value in the x axis to 0
     theme(plot.margin = unit(c(0,0,0,0), "cm")) #expand the plot so when ggarange there is no gap in between two plots
   
   # Plot stacked bar plot
-  plot2 <- ggplot()+
+  plot2 <- ggplot() +
     geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
     scale_fill_manual(values = c("Minor"="green","Major"="blue")) +
     scale_x_reverse(expand = expansion(add = c(500, 500))) + #expand the bar and also reverse the x axis value
@@ -186,7 +193,8 @@ plotting_maf <- function(data){
     theme(plot.margin = unit(c(0,0,0,0), "cm")) #Expand the plot so when merge it seamless
   
   # Combine plots
-  plot3 <- ggarrange(plot1, plot2, heights = c(0.25, 0.4))
+  plot3 <- ggarrange(plot1, plot2, heights = c(0.25, 0.4)) #+
+    #theme(plot.margin = unit(c(0,0,0,0), "cm")) 
   
   # Return result
   return(plot3)
@@ -196,6 +204,6 @@ plotting_maf <- function(data){
 allele_data_1 <- allele_data(bim = bim_data,ped = ped_data_list, time_vec = time_vec )
 
 
-
+plotting_maf(allele_data_1)
 
 
