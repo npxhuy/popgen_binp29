@@ -14,6 +14,8 @@ make_primary_data <- function(){
   return(filter_data)
 }
 
+tempdata <- make_primary_data()
+
 # Create a time step vector function, take the step as an number and data as the
 # main data that have the mean date of individuals and its ID
 create_time_vec <- function(step,data){
@@ -54,9 +56,9 @@ ped_data_list <- make_secondary_data(time_vec = time_vec,
 
 
 # The bim is the .bim from the working directory
-# The ped1 is the original ped file
 # The ped2 is the generated file from make_secondary_data
 # The time_vec is generated from create_time_vec
+
 allele_data <- function(bim, ped, time_vec){
   snp_name=readline("Input: ")
   snps=bim$V2
@@ -155,9 +157,6 @@ plotting_maf <- function(data){
   # Make data for line plot
   plot_data_line <- as.data.frame(data[3:4])
   
-  
-  
-  
   # Find time_vec resolution, to make the plot beautiful
   # Part of the trickiness here is that padding works differently 
   # for points/lines vs. bars, which have width around the data point. 
@@ -206,4 +205,29 @@ allele_data_1 <- allele_data(bim = bim_data,ped = ped_data_list, time_vec = time
 
 plotting_maf(allele_data_1)
 
+ped_data_list[[1]][1,2]
+
+
+
+plot_data <- reactive({
+  
+  # Use function 1
+  txt <- input$txt
+  fam <- input$fam
+  primary <- make_primary_data(txt_file = txt, fam_file = fam)
+  
+  # Use function 2
+  step <- input$step
+  time_vector <- create_time_vec(step = step, data = primary)
+  
+  # Use function 3
+  ped <- input$ped
+  ped_data_list <- make_secondary_data(time_vec = time_vector, ped = ped, primary = primary)
+  
+  # Use function 4
+  snp <- input$snp
+  bim <- input$bim
+  plot_data <- allele_data(snp = snp, bim = bim, ped = ped_data_list, time_vec = time_vec)
+  plot_data
+})
 

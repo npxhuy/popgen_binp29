@@ -6,7 +6,10 @@ setwd("~/Documents/GitHub/popgen_binp29/Data")
 if(!require("dplyr")) install.packages("dplyr")
 if(!require("stringr")) install.packages("stringr")
 if(!require("ggplot2")) install.packages("ggplot2")
-if(!require("egg")) install.packages("egg")
+if(!require("ggpubr")) install.packages("ggpubr")
+library(ggpubr)
+library(shiny)
+library(shinyFiles)
 
 # Read txt file, this file has ID and mean date
 date_data=read.table(list.files(pattern = "\\.txt$"),header=FALSE)              # OPTIONAL TO TAKE USER INPUT, write if else for the correct format of txt file
