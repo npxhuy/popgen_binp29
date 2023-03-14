@@ -1,3 +1,5 @@
+SNPulse is an application that will produce an MAF plot overtime for a certain SNP.
+
 This readme contains the explanation for files type, steps that involving in the population genetics project of the BINP29 course.
 
 # REQUIRED FILES

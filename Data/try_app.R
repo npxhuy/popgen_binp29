@@ -7,6 +7,8 @@ if(!require("ggpubr")) install.packages("ggpubr")
 if(!require("shiny")) install.packages("shiny")
 if(!require("shinyFiles")) install.packages("shinyFiles")
 if(!require("egg")) install.packages("egg")
+if(!require("shinythemes")) install.packages("shinythemes")
+library(shinythemes)
 library(egg)
 library(shiny)
 library(shinyFiles)
@@ -15,8 +17,8 @@ library(stringr)
 library(ggplot2)
 library(ggpubr)
 
-ui <- fluidPage(
-  navbarPage("Plotting MAF overtime",
+ui <- fluidPage(theme = shinytheme("journal"),
+  navbarPage("SNPulse",
       tabPanel("Home",
         # Input values
         sidebarPanel(
@@ -31,7 +33,7 @@ ui <- fluidPage(
         
         mainPanel(
           # Show the output (plot)
-          plotOutput(outputId = "output", width = "80%", height = 660),
+          plotOutput(outputId = "plot", width = "80%", height = 660),
           # Add a download button
           downloadButton("download_beta")
         ) # mainPanel
@@ -234,7 +236,6 @@ server <- function(input, output, session) {
     return(plot3)
   }
   
-  
   primary <- reactive({
     # Use function 1
     txt <- input$txt
@@ -271,15 +272,15 @@ server <- function(input, output, session) {
     plot
   })
   
-  output$output <- renderPlot({
+  output$plot <- renderPlot({
     if (input$submit > 0) {
       print(plot())
     }
   })
+  
   output$download_beta <- downloadHandler(
     filename = paste(input$snp,".pdf",sep=""),
     content = function(file){
-      par(mar = c(1, 1, 1, 1))
       pdf(file)
       print(plot())
       dev.off()
