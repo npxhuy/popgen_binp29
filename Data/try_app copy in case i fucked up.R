@@ -16,34 +16,25 @@ library(ggplot2)
 library(ggpubr)
 
 ui <- fluidPage(
-  navbarPage("Plotting MAF overtime",
-      tabPanel("Home",
-        # Input values
-        sidebarPanel(
-          fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
-          fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
-          fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
-          fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
-          numericInput(inputId = "step", label = "Choose time step", value = 2500),
-          textInput(inputId = "snp", label = "Name of SNP", value = ""),
-          actionButton("submit", "Submit"),
-        ), #sidebarPanel
-        
-        mainPanel(
-          # Show the output (plot)
-          plotOutput(outputId = "output", width = "80%", height = 660),
-          # Add a download button
-          downloadButton("download_beta")
-        ) # mainPanel
-      ), # tabPanel #Home
-      
-      tabPanel("Readme", 
-               titlePanel("Readme"), 
-               div(includeMarkdown("readme.md"), 
-                   align="justify")
-      ) #tabPanel #About
-  ) # navabarPage
-) #fluidPage
+  titlePanel("MAF plotting"),
+  sidebarLayout(
+    sidebarPanel(
+      fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
+      fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
+      fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
+      fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
+      numericInput(inputId = "step", label = "Choose time step", value = 2500),
+      textInput(inputId = "snp", label = "Name of SNP", value = ""),
+      actionButton("submit", "Submit"),
+    ),
+    mainPanel(
+      # Show the output (plot)
+      plotOutput(outputId = "output", width = "80%", height = 660),
+      # Add a download button
+      downloadButton("download_beta")
+    )
+  )
+)
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize=2000*1024^2)
