@@ -187,4 +187,4 @@ plot2 <- ggplot()+
 
 egg::ggarrange(plot1, plot2, heights = c(0.25, 0.4))
 
-rm() 
+

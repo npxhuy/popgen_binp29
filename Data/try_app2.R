@@ -18,33 +18,33 @@ library(ggplot2)
 library(ggpubr)
 
 ui <- fluidPage(theme = shinytheme("journal"),
-  navbarPage("SNPulse",
-      tabPanel("Home",
-        # Input values
-        sidebarPanel(
-          #fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
-          #fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
-          fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
-          fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
-          #numericInput(inputId = "step", label = "Choose time step", value = 2500),
-          #textInput(inputId = "snp", label = "Name of SNP", value = ""),
-          actionButton("submit", "Submit"),
-        ), #sidebarPanel
-        
-        mainPanel(
-          # Show the output (plot)
-          tableOutput(outputId = "plot"), #, width = "80%", height = 660),
-          # Add a download button
-          downloadButton("download_beta")
-        ) # mainPanel
-      ), # tabPanel #Home
-      
-      tabPanel("Readme", 
-               titlePanel("Readme"), 
-               div(includeMarkdown("readme.md"), 
-                   align="justify")
-      ) #tabPanel #About
-  ) # navabarPage
+                navbarPage("SNPulse",
+                           tabPanel("Home",
+                                    # Input values
+                                    sidebarPanel(
+                                      fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
+                                      fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
+                                      fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
+                                      fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
+                                      numericInput(inputId = "step", label = "Choose time step", value = 2500),
+                                      textInput(inputId = "snp", label = "Name of SNP", value = ""),
+                                      actionButton("submit", "Submit"),
+                                    ), #sidebarPanel
+                                    
+                                    mainPanel(
+                                      # Show the output (plot)
+                                      plotOutput(outputId = "output", width = "80%", height = 660),
+                                      # Add a download button
+                                      downloadButton("download_beta")
+                                    ) # mainPanel
+                           ), # tabPanel #Home
+                           
+                           tabPanel("Readme", 
+                                    titlePanel("Readme"), 
+                                    div(includeMarkdown("readme.md"), 
+                                        align="justify")
+                           ) #tabPanel #About
+                ) # navabarPage
 ) #fluidPage
 
 server <- function(input, output, session) {
@@ -65,7 +65,7 @@ server <- function(input, output, session) {
     col_index_snp=match(snp_name,snp_list)+6
     
     # Extract the first 6 cols and the allele count of the snp
-    snp_ped = select(ped, all_of(c(1,2,3,4,5,6,col_index_snp)))
+    snp_ped = select(ped, all_of(c(1,2,col_index_snp)))
     
     return(snp_ped)
   }
@@ -94,9 +94,10 @@ server <- function(input, output, session) {
   
   # Function 3
   make_secondary_data <- function(time_vec,ped,primary){
-    #time_data_list=list()
+    #Making return data
     ped_data_list=list()
-    ped <- read.delim(ped$datapath, header=FALSE) 
+    
+    # Add data to the return data
     for (i in 1:(length(time_vec)-1)) { 
       # Create time data, add to a time_data list
       time_temp=primary[primary$V2 >= time_vec[i] & primary$V2 < time_vec[i+1], ]
@@ -115,7 +116,7 @@ server <- function(input, output, session) {
     snp_name = snp
     snp_list=bim$V2
     
-   # Find column index
+    # Find column index
     col_index_allele=match(snp_name,snp_list)
     
     # Retrieve the minor and major
@@ -129,7 +130,7 @@ server <- function(input, output, session) {
     
     for (i in 1:length(ped)){
       # Retrieve ped data
-      sep_ped_temp=ped[[i]][,7]
+      sep_ped_temp=ped[[i]][,3]
       
       # Look for minor and major allele in bim file
       minor_temp=as.character(bim$V5[col_index_allele])
@@ -242,10 +243,10 @@ server <- function(input, output, session) {
     # Plot stacked bar plot
     plot2 <- ggplot() +
       geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
-      scale_fill_manual(values = c("Minor"="green","Major"="blue")) +
+      scale_fill_manual(values = c("Minor"="#f6b26b","Major"="#2986cc")) +
       scale_x_reverse(expand = expansion(add = c(500, 500))) + #expand the bar and also reverse the x axis value
       scale_y_reverse(expand = expansion(mult = c(0.05, 0))) + #expand the y axis upward and downward so the x-axis kinda disappear when merge two plot
-      theme_classic() + theme(legend.position = "none") + #Remove legend
+      theme_classic() + theme(legend.position = "right") +
       theme(text = element_text(size = 22)) +
       theme(plot.margin = unit(c(0,0,0,0.09), "cm")) #Expand the plot so when merge it seamless
     
@@ -283,7 +284,6 @@ server <- function(input, output, session) {
   
   ped_list <- reactive({
     # Use function 3
-    # ped <- input$ped
     ped_list <- make_secondary_data(time_vec = time_vector(), ped = newped(), primary = primary())
     ped_list
   })
@@ -302,18 +302,12 @@ server <- function(input, output, session) {
     plot
   })
   
-  output$plot <- renderTable({
+ 
+  #OUTPUT 
+  output$output <- renderPlot({
     if (input$submit > 0) {
-      print(newped())
-    }
-  })
-  
-  output$download_beta <- downloadHandler(
-    filename = paste(input$snp,".pdf",sep=""),
-    content = function(file){
-      pdf(file)
       print(plot())
-      dev.off()
+    }
   })
 }
 

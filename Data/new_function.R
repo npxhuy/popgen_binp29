@@ -1,7 +1,30 @@
-# Create a main data
-# Take txt file in the working directory (that has the ID of individuals and its mean date)
-# Take the .fam file in the working directory
-# Filter out the similar ID between those two and return a filter data of ID and mean date
+# Need to be remove
+
+bim=read.table(list.files(pattern = "\\.bim$"),header=FALSE)
+ped=read.delim("DataS1_small.ped",header=FALSE)
+
+make_ped <- function(snp,ped,bim){
+  # Read bim and ped file
+  
+  #bim <- read.table(bim$datapath, header=FALSE)
+  #ped <- read.delim(ped$datapath, header=FALSE) 
+  
+  # Extract snp name and snp list
+  snp_name = snp
+  snp_list = bim$V2
+  
+  # Use snp name and snp list to get the col_index_snp
+  col_index_snp=match(snp_name,snp_list)+6
+  
+  # Extract the first 6 cols and the allele count of the snp
+  snp_ped = select(ped, all_of(c(1,2,col_index_snp)))
+  
+  return(snp_ped)
+}
+
+new_ped <- make_ped("rs3094315",ped,bim)
+
+###
 make_primary_data <- function(){
   # Read txt file, this file has ID and mean date
   date_data=read.table(list.files(pattern = "\\.txt$"),header=FALSE)              # OPTIONAL TO TAKE USER INPUT, write if else for the correct format of txt file
@@ -14,10 +37,9 @@ make_primary_data <- function(){
   return(filter_data)
 }
 
-tempdata <- make_primary_data()
+primary <- make_primary_data()
 
-# Create a time step vector function, take the step as an number and data as the
-# main data that have the mean date of individuals and its ID
+###
 create_time_vec <- function(step,data){
   round_digit=nchar(max(data$V2))-2
   end_time=round(max(data$V2),-round_digit)
@@ -26,14 +48,7 @@ create_time_vec <- function(step,data){
   return(time_vec)
 }
 
-#Example run
-time_vec <- create_time_vec(step = 2000,
-                            data = make_primary_data())
-
-# Make main data for calculate MAF
-# Take time_vec from the create_time_vec function
-# ped is the ped file in the working directory
-# primary is from the make_primary_data function
+time_vec <- create_time_vec(2000,primary)
 
 make_secondary_data <- function(time_vec,ped,primary){
   #time_data_list=list()
@@ -50,22 +65,15 @@ make_secondary_data <- function(time_vec,ped,primary){
   return(ped_data_list)
 }
 
-#Example run
-ped_data_list <- make_secondary_data(time_vec = time_vec,
-                                     ped = ped_data,
-                                     primary = make_primary_data())
+ped_data_list <- make_secondary_data(time_vec,new_ped,primary)
 
-
-# The bim is the .bim from the working directory
-# The ped2 is the generated file from make_secondary_data
-# The time_vec is generated from create_time_vec
-
-allele_data <- function(bim, ped, time_vec){
-  snp_name=readline("Input: ")
-  snps=bim$V2
-  # Ask for user input using readline
-  col_index_snp=match(snp_name,snps)+6
-  col_index_allele=match(snp_name,snps)
+###
+allele_data <- function(snp, bim, ped, time_vec){
+  snp_name=snp
+  snp_list=bim$V2
+  
+  # Find the column of the allele in bim file
+  col_index_allele=match(snp_name,snp_list)
   
   # Retrieve the minor and major
   minor_temp=as.character(bim$V5[col_index_allele])
@@ -77,8 +85,10 @@ allele_data <- function(bim, ped, time_vec){
   maf_vec=NULL
   
   for (i in 1:length(ped)){
-    # Retrieve ped data
-    sep_ped_temp=ped[[i]][,col_index_snp]
+    # The 7th column because the we already filter out the ped file
+    # The first 6 are the normal information
+    # The 7th column has the information of the allele
+    sep_ped_temp=ped[[i]][,3]
     
     # Look for minor and major allele in bim file
     minor_temp=as.character(bim$V5[col_index_allele])
@@ -138,6 +148,8 @@ allele_data <- function(bim, ped, time_vec){
   return(c(final_data_frame,snp_name))
 }
 
+ <- allele_data("rs3094315",bim = bim,ped = ped_data_list,time_vec = time_vec)
+
 plotting_maf <- function(data){
   # Extract the minor, major, snp for label later 
   snp_name = data[5]
@@ -186,28 +198,20 @@ plotting_maf <- function(data){
   # Plot stacked bar plot
   plot2 <- ggplot() +
     geom_bar(data=plot_data_bar_long,stat = "identity", aes(x=Year,y=Count,fill=Allele)) + 
-    scale_fill_manual(values = c("Minor"="green","Major"="blue")) +
+    scale_fill_manual(values = c("Minor"="#f6b26b","Major"="#2986cc")) +
     scale_x_reverse(expand = expansion(add = c(500, 500))) + #expand the bar and also reverse the x axis value
     scale_y_reverse(expand = expansion(mult = c(0.05, 0))) + #expand the y axis upward and downward so the x-axis kinda disappear when merge two plot
-    theme_classic() + theme(legend.position = "none") + #Remove legend
+    theme_classic() + theme(legend.position = "right") + #Remove legend
     theme(plot.margin = unit(c(0,0,0,0), "cm")) #Expand the plot so when merge it seamless
   
   # Combine plots
   plot3 <- ggarrange(plot1, plot2, heights = c(0.25, 0.4)) #+
-    #theme(plot.margin = unit(c(0,0,0,0), "cm")) 
+  #theme(plot.margin = unit(c(0,0,0,0), "cm")) 
   
   # Return result
   return(plot3)
 }
 
-
-allele_data_1 <- allele_data(bim = bim_data,ped = ped_data_list, time_vec = time_vec )
-
-
-plotting_maf(allele_data_1)
-
-ped_data_list[[1]][1,2]
-
-
+plotting_maf(new_ped)
 
 

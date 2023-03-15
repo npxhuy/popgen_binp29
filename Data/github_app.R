@@ -18,57 +18,37 @@ library(ggplot2)
 library(ggpubr)
 
 ui <- fluidPage(theme = shinytheme("journal"),
-  navbarPage("SNPulse",
-      tabPanel("Home",
-        # Input values
-        sidebarPanel(
-          #fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
-          #fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
-          fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
-          fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
-          #numericInput(inputId = "step", label = "Choose time step", value = 2500),
-          #textInput(inputId = "snp", label = "Name of SNP", value = ""),
-          actionButton("submit", "Submit"),
-        ), #sidebarPanel
-        
-        mainPanel(
-          # Show the output (plot)
-          tableOutput(outputId = "plot"), #, width = "80%", height = 660),
-          # Add a download button
-          downloadButton("download_beta")
-        ) # mainPanel
-      ), # tabPanel #Home
-      
-      tabPanel("Readme", 
-               titlePanel("Readme"), 
-               div(includeMarkdown("readme.md"), 
-                   align="justify")
-      ) #tabPanel #About
-  ) # navabarPage
+                navbarPage("SNPulse",
+                           tabPanel("Home",
+                                    # Input values
+                                    sidebarPanel(
+                                      fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
+                                      fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
+                                      fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
+                                      fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
+                                      numericInput(inputId = "step", label = "Choose time step", value = 2500),
+                                      textInput(inputId = "snp", label = "Name of SNP", value = ""),
+                                      actionButton("submit", "Submit"),
+                                    ), #sidebarPanel
+                                    
+                                    mainPanel(
+                                      # Show the output (plot)
+                                      plotOutput(outputId = "plot", width = "80%", height = 660),
+                                      # Add a download button
+                                      downloadButton("download_beta")
+                                    ) # mainPanel
+                           ), # tabPanel #Home
+                           
+                           tabPanel("Readme", 
+                                    titlePanel("Readme"), 
+                                    div(includeMarkdown("readme.md"), 
+                                        align="justify")
+                           ) #tabPanel #About
+                ) # navabarPage
 ) #fluidPage
 
 server <- function(input, output, session) {
   options(shiny.maxRequestSize=2000*1024^2)
-  
-  # Function 0
-  make_ped <- function(snp,ped,bim){
-    # Read bim and ped file
-    
-    bim <- read.table(bim$datapath, header=FALSE)
-    ped <- read.delim(ped$datapath, header=FALSE) 
-    
-    # Extract snp name and snp list
-    snp_name = snp
-    snp_list = bim$V2
-    
-    # Use snp name and snp list to get the col_index_snp
-    col_index_snp=match(snp_name,snp_list)+6
-    
-    # Extract the first 6 cols and the allele count of the snp
-    snp_ped = select(ped, all_of(c(1,2,3,4,5,6,col_index_snp)))
-    
-    return(snp_ped)
-  }
   
   # Function 1
   make_primary_data <- function(txt_file, fam_file) {
@@ -110,13 +90,12 @@ server <- function(input, output, session) {
   
   # Function 4
   allele_data <- function(snp, bim, ped, time_vec){
+    snp_name=snp
     bim <- read.table(bim$datapath, header=FALSE)
-    
-    snp_name = snp
-    snp_list=bim$V2
-    
-   # Find column index
-    col_index_allele=match(snp_name,snp_list)
+    snps=bim$V2
+    # Ask for user input using readline
+    col_index_snp=match(snp_name,snps)+6
+    col_index_allele=match(snp_name,snps)
     
     # Retrieve the minor and major
     minor_temp=as.character(bim$V5[col_index_allele])
@@ -129,7 +108,7 @@ server <- function(input, output, session) {
     
     for (i in 1:length(ped)){
       # Retrieve ped data
-      sep_ped_temp=ped[[i]][,7]
+      sep_ped_temp=ped[[i]][,col_index_snp]
       
       # Look for minor and major allele in bim file
       minor_temp=as.character(bim$V5[col_index_allele])
@@ -257,15 +236,6 @@ server <- function(input, output, session) {
     return(plot3)
   }
   
-  newped <- reactive({
-    # Use function 0
-    bim <- input$bim
-    ped <- input$ped
-    snp <- input$snp
-    newped <- make_ped(snp = snp,bim = bim, ped = ped)
-    newped
-  })
-  
   primary <- reactive({
     # Use function 1
     txt <- input$txt
@@ -283,8 +253,8 @@ server <- function(input, output, session) {
   
   ped_list <- reactive({
     # Use function 3
-    # ped <- input$ped
-    ped_list <- make_secondary_data(time_vec = time_vector(), ped = newped(), primary = primary())
+    ped <- input$ped
+    ped_list <- make_secondary_data(time_vec = time_vector(), ped = ped, primary = primary())
     ped_list
   })
   
@@ -302,9 +272,9 @@ server <- function(input, output, session) {
     plot
   })
   
-  output$plot <- renderTable({
+  output$plot <- renderPlot({
     if (input$submit > 0) {
-      print(newped())
+      print(plot())
     }
   })
   
@@ -314,7 +284,7 @@ server <- function(input, output, session) {
       pdf(file)
       print(plot())
       dev.off()
-  })
+    })
 }
 
 shinyApp(ui, server)
