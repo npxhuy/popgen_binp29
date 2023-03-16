@@ -17,16 +17,32 @@ library(stringr)
 library(ggplot2)
 library(ggpubr)
 
+# Starts a web page, choose a theme
 ui <- fluidPage(theme = shinytheme("journal"),
+                # Navigation bar name
                 navbarPage("SNPulse",
+                           # First tab
                            tabPanel("Home",
-                                    # Input values
                                     sidebarPanel(
-                                      fileInput(inputId = "bim",label = "Upload the .bim file", multiple = FALSE), # fileinput() function is used to get the file upload contorl option
-                                      fileInput(inputId = "ped",label = "Upload the .ped file", multiple = FALSE),
-                                      fileInput(inputId = "fam",label = "Upload the .fam file", multiple = FALSE),
-                                      fileInput(inputId = "txt",label = "Upload the .txt file (contains the ID and mean date)", multiple = FALSE),
-                                      numericInput(inputId = "step", label = "Choose time step", value = 2500),
+                                      fileInput(inputId = "bim",
+                                                label = "Upload the .bim file", 
+                                                multiple = FALSE,
+                                                accept = ".bim"),
+                                      fileInput(inputId = "ped"
+                                                ,label = "Upload the .ped file", 
+                                                multiple = FALSE,
+                                                accept = ".ped"),
+                                      fileInput(inputId = "fam",
+                                                label = "Upload the .fam file", 
+                                                multiple = FALSE,
+                                                accept = ".fam"),
+                                      fileInput(inputId = "txt",
+                                                label = "Upload the .txt file (contains the ID and mean date)", 
+                                                multiple = FALSE,
+                                                accept = c("t")),
+                                      numericInput(inputId = "step", 
+                                                   label = "Choose time step", 
+                                                   value = 2500),
                                       textInput(inputId = "snp", label = "Name of SNP", value = ""),
                                       actionButton("submit", "Submit"),
                                     ), #sidebarPanel
@@ -35,7 +51,7 @@ ui <- fluidPage(theme = shinytheme("journal"),
                                       # Show the output (plot)
                                       plotOutput(outputId = "output", width = "80%", height = 660),
                                       # Add a download button
-                                      downloadButton("download_beta")
+                                      downloadButton("download")
                                     ) # mainPanel
                            ), # tabPanel #Home
                            
@@ -252,7 +268,6 @@ server <- function(input, output, session) {
     
     # Combine plots
     plot3 <- egg::ggarrange(plot1, plot2, heights = c(0.25, 0.4), ncol=1) #+
-    #theme(plot.margin = unit(c(0,0,0,0), "cm")) 
     
     # Return result
     return(plot3)
@@ -260,25 +275,22 @@ server <- function(input, output, session) {
   
   newped <- reactive({
     # Use function 0
-    bim <- input$bim
-    ped <- input$ped
-    snp <- input$snp
-    newped <- make_ped(snp = snp,bim = bim, ped = ped)
+    req(input$bim, input$ped, input$snp)
+    newped <- make_ped(snp = input$snp, bim = input$bim, ped = input$ped)
     newped
   })
   
   primary <- reactive({
     # Use function 1
-    txt <- input$txt
-    fam <- input$fam
-    primary <- make_primary_data(txt_file = txt, fam_file = fam)
+    req(input$txt, input$fam)
+    primary <- make_primary_data(txt_file = input$txt, fam_file = input$fam)
     primary
   })
   
   time_vector <- reactive({
     # Use function 2
-    step <- input$step
-    time_vector <- create_time_vec(step = step, data = primary())
+    req(input$step)
+    time_vector <- create_time_vec(step = input$step, data = primary())
     time_vector
   })
   
@@ -290,9 +302,8 @@ server <- function(input, output, session) {
   
   plot_data <- reactive({
     # Use function 4
-    snp <- input$snp
-    bim <- input$bim
-    plot_data <- allele_data(snp = snp, bim = bim, ped = ped_list(), time_vec = time_vector())
+    req(input$snp, input$bim)
+    plot_data <- allele_data(snp = input$snp, bim = input$bim, ped = ped_list(), time_vec = time_vector())
     plot_data
   })
   
@@ -301,14 +312,27 @@ server <- function(input, output, session) {
     plot <- plotting_maf(plot_data(),time_vector())
     plot
   })
-  
  
   #OUTPUT 
   output$output <- renderPlot({
     if (input$submit > 0) {
       print(plot())
     }
-  })
-}
+  }) #output$output
+  
+  output$download <- downloadHandler(
+    filename = function() {
+      paste0(input$snp,".png")
+    },
+    content = function(file){
+      png(file,
+          height = 2048,
+          width = 2048,
+          res = 300)
+      print(plot())
+      dev.off()
+    }) #output$download
+  
+} #server
 
 shinyApp(ui, server)
