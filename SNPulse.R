@@ -17,6 +17,7 @@ library(stringr)
 library(ggplot2)
 library(ggpubr)
 
+
 # Starts a web page, choose a theme
 ui <- fluidPage(theme = shinytheme("journal"),
                 # Navigation bar name
