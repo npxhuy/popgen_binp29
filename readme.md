@@ -47,7 +47,7 @@ To use plink, we could either:
 
 After extraction, copy the *plink* file to the folder that has the data. To use the *plink* file, we run to *plink* file as ./plink --yourcommand
 
-2. Install plink through anaconda, which needed anaconda to be install first, read more about instsallation of conda in through this [link](https://docs.conda.io/en/latest/miniconda.html).
+2. Install plink through anaconda, which needed anaconda to be install first, read more about installation of conda in through this [link](https://docs.conda.io/en/latest/miniconda.html).
 
 In this case, we will use the second option.
 ```sh
