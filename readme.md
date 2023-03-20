@@ -62,7 +62,7 @@ The *.ped* file contains no header line, and one line per sample with 2V+6 field
 
 This application required the *.ped* file that was just generated, *.bim* and *.fam* file to run.
 
-## .txt file contains ID & Mean Date
+## *.txt* file contains ID & Mean Date
 The information about mean date was not inclued in the any of the previous file. In this case the mean date data was obtain through an Excel file. 
 
 From that Excel file, the data of the ID of individuals and their mean date will be extracted into a single *.txt* file, with two columns, the first column contains the IDs and the second column contains their mean date.
@@ -91,3 +91,32 @@ A positive interger number that indicates the time step to generated the time ve
 
 ## SNP
 A single name of a snp. The input snp should be from one of the snp from the *.bim* file in the second column.
+
+# METHODOLOGY
+The process can be summed up as: 
+1. Retrieve data from input files & parameters
+2. Make data for plotting
+3. Produce plot
+Specifically, the the process included the following minor steps:
+1. Filter *.ped* file with input SNP
+2. Filter *.txt* file with *.fam* file
+3. Construct time vector from the input time step
+4. From 3 data above, separate the *.ped* file base on time vector
+5. Calculate the MAF and couting allele
+6. Plot point-to-point graph of MAF
+7. Plot stacked bar plot of allele count
+8. Combine those two plot into one plot
+
+# FAQ
+1. Can I use other types of files instead of Plink file format for this app?\
+-> I am sorry but no.
+2. I only have the *.bed*, *.fam* and *.bim* file, what is the *.ped* file?\
+-> Use Plink to generate *.ped* file from those 3 files, more information is in section about *.bed* & *.ped* file
+3. What is the *.txt* file?\
+-> Read section about *.txt* file contains ID & Mean Date
+4. No plot was shown, what was wrong?\
+-> Did you remember to click the submit button? The submit button should have a blue *aura* when click it.
+5. I click the submit button, no plot was shown, what was wrong?\
+-> If no error message was display, the application would have been still running. For the example data set I provide in **Data** directory, it took around 2-3 mins to generate on my computer. Please wait!
+6. An error was displayed but it did not tell me what was the error?\
+-> I am so sorry that you experience an error with my application. Please open a new issue and give me details about your error, I will find a way to fix it as soon as possible.
