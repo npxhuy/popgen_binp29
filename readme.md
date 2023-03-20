@@ -1,9 +1,9 @@
-SNPulse is an application that will produce an MAF plot overtime for a certain SNP.
+SNPulse is an application that will produce an minor allele frequency plot overtime for a certain SNP.
 
 This readme contains the explanation for files type, steps that involving in the population genetics project of the BINP29 course.
 
 # USAGE OF APPLICATION
-Clone the application SNPulse.R and readme.md file to your computer, run SNPulse.R will R Studio.\
+Clone the application **SNPulse.R** and **readme.md** file to your computer, run **SNPulse.R** will **R Studio**.\
 If you did not have sample data, they could be cloned from folder Data on github.\
 Upload the required files, fill in the parameters and hit submit button.\
 The information of files and parameters is written below. The download button can be used to download the plot in high definition.
