@@ -14,6 +14,8 @@ make_primary_data <- function(){
   return(filter_data)
 }
 
+
+
 tempdata <- make_primary_data()
 
 # Create a time step vector function, take the step as an number and data as the
@@ -208,6 +210,21 @@ plotting_maf(allele_data_1)
 
 ped_data_list[[1]][1,2]
 
+plot(1,2)
+
+plot(c(1,2),c(1,2), xlab = "This is an error display plot", ylab = "Same as x-axis")
+text(x=1.5,
+     y=1.9,
+     labels="MAF plot can not be made because error happened",
+     col="red",
+     cex=1)
+text(x=1.5,
+     y=1.5,
+     labels=error)
 
 
-
+a <- ggplot() +
+  geom_point(data = a3, aes(x=a1,y=a2))+
+  theme_classic()
+  
+a

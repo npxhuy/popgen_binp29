@@ -3,6 +3,9 @@
 bim=read.table(list.files(pattern = "\\.bim$"),header=FALSE)
 ped=read.delim("DataS1_small.ped",header=FALSE)
 
+
+
+
 make_ped <- function(snp,ped,bim){
   # Read bim and ped file
   
@@ -23,6 +26,17 @@ make_ped <- function(snp,ped,bim){
 }
 
 new_ped <- make_ped("rs3094315",ped,bim)
+
+new_ped <- tryCatch({
+  make_ped("rs3094314",ped,bim)
+}, error = function(e) {
+  return("error1")
+})
+if (is.null(new_ped)){
+  new_ped="error"
+} else (new_ped <- make_ped("rs3094315",ped,bim))
+
+
 
 ###
 make_primary_data <- function(){

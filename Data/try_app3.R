@@ -282,49 +282,109 @@ server <- function(input, output, session) {
   newped <- reactive({
     # Use function 0
     req(input$bim, input$ped, input$snp)
-    newped <- make_ped(snp = input$snp, bim = input$bim, ped = input$ped)
+    
+    # Error handling
+    newped <- tryCatch({
+      make_ped(snp = input$snp, bim = input$bim, ped = input$ped)
+    }, error = function(e) {
+      return("error1")
+    })
     newped
   })
   
   primary <- reactive({
     # Use function 1
     req(input$txt, input$fam)
-    primary <- make_primary_data(txt_file = input$txt, fam_file = input$fam)
+    
+    # Error handling
+    primary <- tryCatch({
+      make_primary_data(txt_file = input$txt, fam_file = input$fam)
+    }, error = function(e) {
+      return("error2")
+    })
     primary
   })
   
   time_vector <- reactive({
     # Use function 2
     req(input$step)
-    time_vector <- create_time_vec(step = input$step, data = primary())
+    
+    # Error handling
+    if (is.null(primary())){
+      time_vector = "error3"
+    } else if (primary()=="error2") {
+      time_vector = "error2"
+    } else {
+      time_vector <- create_time_vec(step = input$step, data = primary())
+    }
     time_vector
   })
   
   ped_list <- reactive({
     # Use function 3
-    ped_list <- make_secondary_data(time_vec = time_vector(), 
-                                    ped = newped(), primary = primary())
+    # Error handling
+    ped_list <- tryCatch({
+      make_secondary_data(time_vec = time_vector(), 
+                          ped = newped(), primary = primary())
+    }, error = function(e) {
+      return(NULL)
+    })
     ped_list
   })
   
   plot_data <- reactive({
     # Use function 4
     req(input$snp, input$bim)
-    plot_data <- allele_data(snp = input$snp, bim = input$bim, ped = ped_list(),
-                             time_vec = time_vector())
+    # Error handling
+    plot_data <- tryCatch({
+      allele_data(snp = input$snp, bim = input$bim, ped = ped_list(),
+                  time_vec = time_vector())
+    }, error = function(e) {
+      return(NULL)
+    })
     plot_data
   })
   
   plot <- reactive({
     # Use function 5
-    plot <- plotting_maf(plot_data(), time_vector())
+    # Error handling
+    plot <- tryCatch({
+      plotting_maf(plot_data(), time_vector())
+    }, error = function(e) {
+      return(NULL)
+    })
     plot
+    
+    error <-reactive({
+      error=NULL
+      if (newped()=="error1"){
+        error=c("1. Input SNP could not be found in .bim file",
+                "2. Wrong input or not right format of .bim or .ped file")
+      } else if(primary()=="error2"){
+        error=c("Wrong input or not right format of.txt or .fam file")
+      } else if(time_vector()=="error3"){
+        error=c("No common ID was found in between .txt and .fam file")
+      }
+      error
+    })
   })
  
   #OUTPUT 
   output$output <- renderPlot({
     if (input$submit > 0) {
-      print(plot())
+      if (!is.null(plot())){
+        print(plot())
+      } else {
+        plot(c(1,2),c(1,2), xlab = "This is an error display plot", ylab = "Same as x-axis")
+        text(x=1.5,
+             y=1.9,
+             labels="MAF plot can not be made because error happened",
+             col="red",
+             cex=1)
+        text(x=1.5,
+             y=1.5,
+             labels=error)
+      }
     }
   }) #output$output
   
