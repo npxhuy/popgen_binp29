@@ -97,6 +97,7 @@ The process can be summed up as:
 1. Retrieve data from input files & parameters
 2. Make data for plotting
 3. Produce plot
+
 Specifically, the the process included the following minor steps:
 1. Filter *.ped* file with input SNP
 2. Filter *.txt* file with *.fam* file
